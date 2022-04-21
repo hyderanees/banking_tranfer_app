@@ -4,6 +4,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from .models import Bank
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
@@ -51,3 +53,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+class BankSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True)
+    address = serializers.CharField(required=True)
+
+    class Meta:
+        model = Bank
+        fields = '__all__'
