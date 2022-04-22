@@ -22,6 +22,7 @@ class Account(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, db_column='owner')
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE, db_column='bank')
     balance = models.FloatField(null=False, default=0.0)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
 
