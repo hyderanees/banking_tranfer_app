@@ -28,3 +28,7 @@ class Account(models.Model):
 
     class Meta:
         db_table = 'Account'
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        pass
