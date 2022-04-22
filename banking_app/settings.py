@@ -10,25 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
+
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = config(
+    'SECRET_KEY', default='**f%ka^fnw5bb+qirt-&fy(k-!a!4gfgs4%e5s-17mf@tw*_h)')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
+DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
+TEMPLATE_DEBUG = DEBUG
+LOG_LEVEL = config('DJANGO_LOG_LEVEL', default='CRITICAL')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'egp9awc1^5dn+fz7b0@(qd*2d77xowd0d0^ezqjtuisxe*))i4'
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default='localhost')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
-
-# Application definition
+CORS_ORIGIN_WHITELIST = config('CORS_ORIGIN_WHITELIST', cast=Csv(), default='http://localhost:8000')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'api'
+    'api',
+    'corsheaders',
+    'django_userforeignkey'
 ]
 
 MIDDLEWARE = [
@@ -71,7 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'banking_app.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -81,7 +81,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -101,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -115,8 +113,18 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1)
+}

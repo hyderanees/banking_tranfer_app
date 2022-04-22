@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -56,8 +57,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class BankSerializer(serializers.ModelSerializer):
-    # name = serializers.CharField(required=True)
-    # address = serializers.CharField(required=True)
 
     class Meta:
         model = Bank
@@ -65,28 +64,23 @@ class BankSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    owner = serializers.CharField(allow_blank=True, default='')
+    IBAN = serializers.CharField(allow_blank=True, default='')
+    balance = serializers.IntegerField(default=0)
 
     class Meta:
         model = Account
-        fields = ('title', 'owner', 'bank')
-
+        fields = ('id', 'title', 'bank', 'owner', 'IBAN', 'balance')
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        user = self.context['request'].user
+        if Account.objects.filter(owner=user).count() >= 2:
+            raise serializers.ValidationError({"error": "You cannot make more than 5 accounts"})
 
         return attrs
 
     def create(self, validated_data):
-        print(validated_data)
-        user = User.objects.create(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
-        )
-
-        user.set_password(validated_data['password'])
-        user.save()
-
-        return user
+        with transaction.atomic():
+            account_ = Account.objects.create(owner=self.context['request'].user, title=validated_data['title'],
+                                              bank=validated_data['bank'])
+            return account_
